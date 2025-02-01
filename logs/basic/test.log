@@ -1,18 +1,14 @@
 Traceback (most recent call last):
-  File "C:\Users\MAYURESH PATIL\Desktop\rotation_project\test.py", line 11, in <module>
-    model = get_model(config['model_name'], config['num_classes'])
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\MAYURESH PATIL\Desktop\rotation_project\model.py", line 41, in get_model
-    "inception": torchvision.models.inception_v3(
-                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Python311\Lib\site-packages\torchvision\models\_utils.py", line 142, in wrapper
-    return fn(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^
-  File "C:\Python311\Lib\site-packages\torchvision\models\_utils.py", line 228, in inner_wrapper
-    return builder(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Python311\Lib\site-packages\torchvision\models\inception.py", line 466, in inception_v3
-    _ovewrite_named_param(kwargs, "aux_logits", True)
-  File "C:\Python311\Lib\site-packages\torchvision\models\_utils.py", line 238, in _ovewrite_named_param
-    raise ValueError(f"The parameter '{param}' expected value {new_value} but got {kwargs[param]} instead.")
-ValueError: The parameter 'aux_logits' expected value True but got False instead.
+  File "C:\Users\MAYURESH PATIL\Desktop\rotation_project\test.py", line 12, in <module>
+    model.load_state_dict(torch.load('best_model.pth'))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python311\Lib\site-packages\torch\serialization.py", line 1425, in load
+    with _open_file_like(f, "rb") as opened_file:
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python311\Lib\site-packages\torch\serialization.py", line 751, in _open_file_like
+    return _open_file(name_or_buffer, mode)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python311\Lib\site-packages\torch\serialization.py", line 732, in __init__
+    super().__init__(open(name, mode))
+                     ^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'best_model.pth'

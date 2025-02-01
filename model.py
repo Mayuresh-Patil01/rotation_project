@@ -2,10 +2,8 @@ import torch
 import torch.nn as nn
 import torchvision
 from torchvision.models import (
-    VGG16_Weights,
-    ResNet18_Weights,
-    AlexNet_Weights,
-    Inception_V3_Weights,
+    VGG16_Weights, ResNet18_Weights,
+    AlexNet_Weights, Inception_V3_Weights,
     ViT_B_16_Weights
 )
 
@@ -34,25 +32,27 @@ class BasicModel(nn.Module):
         return x
 
 def get_model(model_name, num_classes=4):
-    models = {
-        "vgg": torchvision.models.vgg16(weights=VGG16_Weights.IMAGENET1K_V1),
-        "resnet": torchvision.models.resnet18(weights=ResNet18_Weights.IMAGENET1K_V1),
-        "alexnet": torchvision.models.alexnet(weights=AlexNet_Weights.IMAGENET1K_V1),
-        "inception": torchvision.models.inception_v3(
-            weights=Inception_V3_Weights.IMAGENET1K_V1,
-            aux_logits=False  # Critical fix
-        ),
-        "vit": torchvision.models.vit_b_16(weights=ViT_B_16_Weights.IMAGENET1K_V1),
-        "basic": BasicModel()
-    }
-    
-    model = models[model_name]
-    
-    if model_name in ["vgg", "alexnet"]:
+    model = None
+    if model_name == "vgg":
+        model = torchvision.models.vgg16(weights=VGG16_Weights.IMAGENET1K_V1)
         model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, num_classes)
-    elif model_name in ["resnet", "inception"]:
+    elif model_name == "resnet":
+        model = torchvision.models.resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
+        model.fc = nn.Linear(model.fc.in_features, num_classes)
+    elif model_name == "alexnet":
+        model = torchvision.models.alexnet(weights=AlexNet_Weights.IMAGENET1K_V1)
+        model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, num_classes)
+    elif model_name == "inception":
+        model = torchvision.models.inception_v3(
+            weights=Inception_V3_Weights.IMAGENET1K_V1,
+            aux_logits=True
+        )
+        model.aux_logits = False
         model.fc = nn.Linear(model.fc.in_features, num_classes)
     elif model_name == "vit":
+        model = torchvision.models.vit_b_16(weights=ViT_B_16_Weights.IMAGENET1K_V1)
         model.heads.head = nn.Linear(model.heads.head.in_features, num_classes)
-        
+    elif model_name == "basic":
+        model = BasicModel(num_classes)
+    
     return model

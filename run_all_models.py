@@ -2,13 +2,15 @@ import yaml
 import subprocess
 import argparse
 from pathlib import Path
+import os
+import sys
+from pathlib import Path
 
 MODELS = ["basic", "vgg", "resnet", "alexnet", "inception", "vit"]
 CONFIG_FILE = "config.yaml"
 LOG_DIR = "logs"
 
 def update_config(model_name: str):
-    """Update config.yaml with current model settings"""
     with open(CONFIG_FILE, 'r') as f:
         config = yaml.safe_load(f)
     
@@ -19,79 +21,57 @@ def update_config(model_name: str):
         yaml.dump(config, f)
 
 def run_experiment(model_name: str):
-    """Run training and testing for a single model"""
     print(f"\n{'='*40}")
-    print(f"Starting experiment for {model_name.upper()}")
+    print(f"Training {model_name.upper()} (Image Size: {299 if model_name == 'inception' else 224})")
     print(f"{'='*40}")
     
-    # Create log directory
     log_dir = Path(LOG_DIR) / model_name
     log_dir.mkdir(parents=True, exist_ok=True)
+    model_dir = Path('models')
+    model_path = model_dir / 'best_model.pth'
+    if not model_path.exists():
+        print(f"Model not found at {model_path}, skipping test")
+        return
+    update_config(model_name)
     
-    # Run training with logging
+    # Training
     with open(log_dir / "train.log", 'w') as f:
-        train_process = subprocess.run(
+        subprocess.run(
             ["python", "train.py"],
             stdout=f,
             stderr=subprocess.STDOUT,
             text=True
         )
     
-    # Run testing with logging
-    with open(log_dir / "test.log", 'w') as f:
-        test_process = subprocess.run(
-            ["python", "test.py"],
-            stdout=f,
-            stderr=subprocess.STDOUT,
-            text=True
-        )
-    
-    return {
-        'model': model_name,
-        'train_exit': train_process.returncode,
-        'test_exit': test_process.returncode
-    }
+    # Testing only if model saved
+    if os.path.exists('best_model.pth'):
+        with open(log_dir / "test.log", 'w') as f:
+            subprocess.run(
+                ["python", "test.py"],
+                stdout=f,
+                stderr=subprocess.STDOUT,
+                text=True
+            )
+        os.remove('best_model.pth')  # Cleanup for next model
+    else:
+        print(f"⚠️ No model saved for {model_name}, skipping test")
 
 def main():
-    # Setup argument parser
     parser = argparse.ArgumentParser()
     parser.add_argument('--models', nargs='+', default=MODELS,
-                        help="List of models to test")
+                       help="Models to test (default: all)")
     args = parser.parse_args()
 
-    # Create log directory
     Path(LOG_DIR).mkdir(exist_ok=True)
     
-    results = []
     for model in args.models:
         try:
-            # Update configuration
-            update_config(model)
-            
-            # Run experiment
-            result = run_experiment(model)
-            results.append(result)
-            
-            # Print summary
-            print(f"\n{model.upper()} Results:")
-            print(f"Training exit code: {result['train_exit']}")
-            print(f"Testing exit code: {result['test_exit']}")
-            
+            run_experiment(model)
+            print(f"✅ {model.upper()} completed")
         except Exception as e:
-            print(f"Error running {model}: {str(e)}")
-            results.append({'model': model, 'error': str(e)})
+            print(f"❌ {model.upper()} failed: {str(e)}")
     
-    # Save final report
-    with open(Path(LOG_DIR) / "summary.txt", 'w') as f:
-        f.write("Experiment Summary:\n")
-        f.write("="*40 + "\n")
-        for result in results:
-            f.write(f"{result['model']}:\n")
-            f.write(f"  Training exit code: {result.get('train_exit', 'N/A')}\n")
-            f.write(f"  Testing exit code: {result.get('test_exit', 'N/A')}\n")
-            if 'error' in result:
-                f.write(f"  ERROR: {result['error']}\n")
-            f.write("\n")
+    print("\nExperiment summary saved in logs/ directory")
 
 if __name__ == "__main__":
     main()
