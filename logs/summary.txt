@@ -1,0 +1,26 @@
+Experiment Summary:
+========================================
+basic:
+  Training exit code: 1
+  Testing exit code: 1
+
+vgg:
+  Training exit code: 1
+  Testing exit code: 1
+
+resnet:
+  Training exit code: 1
+  Testing exit code: 1
+
+alexnet:
+  Training exit code: 1
+  Testing exit code: 1
+
+inception:
+  Training exit code: 1
+  Testing exit code: 1
+
+vit:
+  Training exit code: 1
+  Testing exit code: 1
+

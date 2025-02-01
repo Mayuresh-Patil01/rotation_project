@@ -1,0 +1,15 @@
+augmentation:
+  blur: true
+  color_jitter: true
+  noise: true
+  rotation: true
+batch_size: 32
+epochs: 5
+image_size: 224
+learning_rate: 0.001
+model_name: vit
+num_classes: 4
+num_workers: 0
+optimizer: adam
+train_dir: data/celeba_small/train
+val_dir: data/celeba_small/val
