@@ -1,11 +1,11 @@
 model_name: "resnet"
 num_classes: 4
-batch_size: 32
+batch_size: 16
 learning_rate: 0.001
 epochs: 5
 image_size: 224
-train_dir: "data/celeba/train"
-test_dir: "data/celeba/test"
+train_dir: "data/celeba/train"  
+test_dir: "data/celeba/test"   
 num_workers: 0
 optimizer: "adam"
 augmentation:

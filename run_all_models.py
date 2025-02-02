@@ -6,7 +6,7 @@ import os
 import sys
 from pathlib import Path
 
-MODELS = ["basic", "vgg", "resnet", "alexnet", "inception", "vit"]
+MODELS = ["basic", "vgg", "resnet", "alexnet", "inception", "vit"]  
 CONFIG_FILE = "config.yaml"
 LOG_DIR = "logs"
 
@@ -27,24 +27,22 @@ def run_experiment(model_name: str):
     
     log_dir = Path(LOG_DIR) / model_name
     log_dir.mkdir(parents=True, exist_ok=True)
-    model_dir = Path('models')
-    model_path = model_dir / 'best_model.pth'
-    if not model_path.exists():
-        print(f"Model not found at {model_path}, skipping test")
-        return
+    
     update_config(model_name)
     
-    # Training
+    # Training with error checking
+    train_success = False
     with open(log_dir / "train.log", 'w') as f:
-        subprocess.run(
+        result = subprocess.run(
             ["python", "train.py"],
             stdout=f,
             stderr=subprocess.STDOUT,
             text=True
         )
+        train_success = (result.returncode == 0)
     
-    # Testing only if model saved
-    if os.path.exists('best_model.pth'):
+    # Testing only if training succeeded
+    if train_success and Path('best_model.pth').exists():
         with open(log_dir / "test.log", 'w') as f:
             subprocess.run(
                 ["python", "test.py"],
@@ -52,9 +50,11 @@ def run_experiment(model_name: str):
                 stderr=subprocess.STDOUT,
                 text=True
             )
-        os.remove('best_model.pth')  # Cleanup for next model
+        Path('best_model.pth').unlink()  # Cleanup
+        return True
     else:
-        print(f"⚠️ No model saved for {model_name}, skipping test")
+        print(f"❌ {model_name.upper()} failed during training")
+        return False
 
 def main():
     parser = argparse.ArgumentParser()
